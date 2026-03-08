@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PARKIT Admin | Analytics & Monitoring</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <div class="container animate-fade-in">
+        <header class="flex justify-between items-center mb-12">
+            <div class="flex items-center gap-4">
+                <img src="favicon.png" alt="PARKIT"
+                    style="width: 45px; height: 45px; border-radius: 10px; box-shadow: 0 4px 12px rgba(25, 189, 255, 0.15);">
+                <div>
+                    <h2 class="title-gradient"
+                        style="margin: 0; background: linear-gradient(135deg, #0f172a 30%, var(--primary) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                        PARKIT Admin</h2>
+                    <p class="text-xs">System Performance & ML Analytics</p>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <button class="btn btn-outline" onclick="window.location.href='index.html'">
+                    <i class="bi bi-person-circle"></i> User View
+                </button>
+            </div>
+        </header>
+
+        <main class="grid" style="grid-template-columns: 1fr 1fr;">
+            <!-- ML Analytics Section -->
+            <section class="glass-panel p-8">
+                <h3 class="mb-6"><i class="bi bi-cpu-fill" style="color: var(--primary);"></i> Machine Learning Status
+                </h3>
+
+                <div class="grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 2rem;">
+                    <div class="glass-card text-center">
+                        <div id="ml-accuracy" class="title-gradient" style="font-size: 2rem;">98.4%</div>
+                        <div class="text-xs">ACCURACY</div>
+                    </div>
+                    <div class="glass-card text-center">
+                        <div id="ml-precision" class="title-gradient" style="font-size: 2rem;">97.11%</div>
+                        <div class="text-xs">PRECISION</div>
+                    </div>
+                </div>
+
+                <!-- Simulation Feed -->
+                <div class="glass-card mb-6"
+                    style="background: #000; border: 1px solid var(--secondary); position: relative; overflow: hidden; height: 260px;">
+                    <img src="assets/cctv_simulation.png"
+                        style="width: 100%; height: 100%; object-fit: cover; opacity: 0.4;">
+                    <div class="flex justify-between items-center mb-2"
+                        style="position: absolute; top: 10px; width: calc(100% - 20px); left: 10px; z-index: 10;">
+                        <span class="text-xs font-bold"
+                            style="color: var(--accent-rose); text-shadow: 0 0 10px rgba(244, 63, 94, 0.5);"><i
+                                class="bi bi-record-circle"></i> LIVE FEED: CAM-04</span>
+                        <span class="text-xs" style="color: var(--secondary);">Detected: <span
+                                id="slots-detected">24</span>/40 Slots</span>
+                    </div>
+                    <div id="cctv-feed"
+                        style="position: absolute; top: 40px; left: 0; width: 100%; height: calc(100% - 40px); display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(5, 1fr); gap: 4px; padding: 10px; box-sizing: border-box;">
+                        <!-- Simulated slot overlays -->
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h4 class="text-xs mb-3">MODEL PERFORMANCE (INFERENCE LATENCY)</h4>
+                    <canvas id="mlChart" height="100"></canvas>
+                </div>
+            </section>
+
+            <!-- RTOS Analytics Section -->
+            <section class="flex flex-col gap-6">
+                <div class="glass-panel p-8">
+                    <h3 class="mb-6"><i class="bi bi-speedometer2" style="color: var(--accent-emerald);"></i> RTOS
+                        Performance</h3>
+                    <div class="grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 1.5rem;">
+                        <div class="glass-card">
+                            <div class="text-xs text-muted mb-1">AVG. SYSTEM LATENCY</div>
+                            <div class="flex items-end gap-2">
+                                <span id="rtos-latency" class="title-gradient" style="font-size: 1.5rem;">42ms</span>
+                                <span class="text-xs" style="color: var(--accent-emerald); padding-bottom: 4px;"><i
+                                        class="bi bi-arrow-down"></i> 2ms</span>
+                            </div>
+                        </div>
+                        <div class="glass-card">
+                            <div class="text-xs text-muted mb-1">DEADLINE MISS RATE</div>
+                            <div class="flex items-end gap-2">
+                                <span id="rtos-misses" class="title-gradient"
+                                    style="font-size: 1.5rem; background: linear-gradient(135deg, white, var(--accent-rose)); -webkit-text-fill-color: transparent;">0.02%</span>
+                                <span class="text-xs"
+                                    style="color: var(--accent-rose); padding-bottom: 4px;">STABLE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h4 class="text-xs mb-3">TASK EXECUTION OVERTIME (JITTER)</h4>
+                        <canvas id="rtosChart" height="120"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6">
+                    <h3 class="mb-4">Live System Metrics</h3>
+                    <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="glass-card">
+                            <span class="text-xs text-muted">Success Rate</span>
+                            <div class="font-bold">99.85%</div>
+                        </div>
+                        <div class="glass-card">
+                            <span class="text-xs text-muted">CPU Overhead</span>
+                            <div class="font-bold">12.4%</div>
+                        </div>
+                    </div>
+                    <div id="booking-logs" class="flex flex-col gap-3 mt-4">
+                        <!-- Logs -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/rtos.js"></script>
+    <script src="js/ml_engine.js"></script>
+    <script src="js/booking_engine.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup Charts
+            const rtosCtx = document.getElementById('rtosChart').getContext('2d');
+            const mlCtx = document.getElementById('mlChart').getContext('2d');
+
+            const rtosChart = new Chart(rtosCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({ length: 10 }, (_, i) => i),
+                    datasets: [{
+                        label: 'Scheduling Jitter (ms)',
+                        data: [5, 4, 6, 8, 4, 3, 5, 2, 4, 5],
+                        borderColor: '#10b981',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)'
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { x: { display: false }, y: { display: true, beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#475569' } } }
+                }
+            });
+
+            const mlChart = new Chart(mlCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['T1', 'T2', 'T3', 'T4', 'T5'],
+                    datasets: [{
+                        label: 'Inference Time (ms)',
+                        data: [110, 125, 118, 122, 115],
+                        backgroundColor: 'rgba(99, 102, 241, 0.5)',
+                        borderColor: '#6366f1',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: false, min: 100, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#475569' } }, x: { ticks: { color: '#475569' } } }
+                }
+            });
+
+            // CCTV Overlay Animation
+            const cctv = document.getElementById('cctv-feed');
+            for (let i = 0; i < 40; i++) {
+                const box = document.createElement('div');
+                box.style.border = '1px solid rgba(16, 185, 129, 0.4)';
+                box.style.borderRadius = '2px';
+                box.style.display = 'flex';
+                box.style.alignItems = 'center';
+                box.style.justifyContent = 'center';
+                box.style.fontSize = '8px';
+                box.style.color = 'var(--text-muted)';
+                box.innerText = i + 1;
+                cctv.appendChild(box);
+            }
+
+            // Update Loop
+            setInterval(() => {
+                const m = RTOS.getMetrics();
+                const mlM = ML.getMetrics();
+
+                document.getElementById('ml-accuracy').innerText = mlM.accuracy;
+                document.getElementById('ml-precision').innerText = mlM.precision;
+                document.getElementById('slots-detected').innerText = ML.slots.filter(s => s.status !== 'available').length;
+
+                // Update CCTV feed based on real ML status
+                const boxes = cctv.children;
+                ML.slots.forEach((slot, i) => {
+                    boxes[i].style.backgroundColor = slot.status === 'available' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.2)';
+                    boxes[i].style.borderColor = slot.status === 'available' ? 'rgba(16, 185, 129, 0.6)' : 'rgba(244, 63, 94, 0.8)';
+                    boxes[i].style.boxShadow = slot.status === 'available' ? 'none' : '0 0 8px rgba(244, 63, 94, 0.4)';
+                });
+
+                // Update Logs
+                const logs = document.getElementById('booking-logs');
+                logs.innerHTML = Booking.bookings.slice(-3).reverse().map(b => `
+                    <div class="flex justify-between items-center text-xs glass-card" style="padding: 0.5rem 1rem;">
+                        <span class="font-bold">${b.vehicleId}</span>
+                        <span class="text-secondary">Slot #${b.slotId}</span>
+                        <span style="color: var(--text-muted);">${new Date(b.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                `).join('');
+
+                if (Booking.bookings.length === 0) logs.innerHTML = '<div class="text-center text-xs text-muted">No active bookings.</div>';
+
+                // Random latency variations for charts
+                rtosChart.data.datasets[0].data.shift();
+                rtosChart.data.datasets[0].data.push(Math.random() * 8 + 2);
+                rtosChart.update('none');
+
+                mlChart.data.datasets[0].data = mlChart.data.datasets[0].data.map(v => v + (Math.random() * 4 - 2));
+                mlChart.update('none');
+
+            }, 1000);
+
+            // Start RTOS simulation background task
+            RTOS.start();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PARKIT | Real-Time Parking Management</title>
+    <meta name="description" content="QR Powered, ML Driven Real-time Smart Parking Solution for modern cities.">
+    <link rel="stylesheet" href="index.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+
+<body>
+
+    <div id="auth-modal"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; background: white; display: flex; overflow-y: auto;">
+        <div class="auth-split-container" style="height: auto; min-height: 100vh; overflow: visible;">
+            <!-- Left Side: Illustration -->
+            <div class="auth-side-panel">
+                <img src="favicon.png" alt="PARKIT"
+                    style="position: absolute; top: 3rem; left: 4rem; width: 50px; height: 50px; border-radius: 12px; z-index: 10; box-shadow: 0 4px 12px rgba(25, 189, 255, 0.2);">
+
+                <div
+                    style="width: 100%; min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; position: relative; z-index: 5;">
+                    <img src="parkit_auth_visual.png" alt="Smart Parking"
+                        style="width: 100%; max-width: 380px; border-radius: 32px; box-shadow: 0 40px 100px rgba(0,0,0,0.1); margin-bottom: 2rem; transform: perspective(1000px) rotateY(-5deg);">
+
+                    <div style="text-align: center; max-width: 380px;">
+                        <h2
+                            style="font-size: 2.2rem; font-family: var(--font-heading); color: var(--text-main); line-height: 1.1; margin-bottom: 1rem; font-weight: 800;">
+                            <span class="primary-gradient">Elevating</span> the Way You Park.
+                        </h2>
+                        <p style="color: var(--text-dim); font-size: 1rem; line-height: 1.5; font-weight: 500;">
+                            Join the future of urban mobility with AI-driven navigation and automated slot management.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Forms -->
+            <div class="auth-form-panel" style="padding: 1rem;">
+                <div class="auth-form-card animate-fade-in">
+                    <div class="auth-tabs">
+                        <button id="tab-login" class="tab-btn active" onclick="switchAuthTab('login')">Login</button>
+                        <button id="tab-signup" class="tab-btn" onclick="switchAuthTab('signup')">Sign Up</button>
+                    </div>
+
+                    <!-- Login Form -->
+                    <div id="login-form">
+                        <h3 style="margin-bottom: 0.5rem;">Welcome back!</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 2rem;">Please enter your
+                            details to continue.</p>
+
+                        <div class="input-group">
+                            <input type="email" id="login-email" placeholder=" " required>
+                            <label>Email Address</label>
+                        </div>
+
+                        <div class="input-group">
+                            <input type="password" id="login-password" placeholder=" " required>
+                            <label>Password</label>
+                            <i class="bi bi-eye pass-toggle" onclick="togglePassVisibility('login-password', this)"></i>
+                        </div>
+
+                        <div class="flex-row">
+                            <label class="flex items-center gap-2 text-sm" style="cursor: pointer;">
+                                <input type="checkbox" style="width: 16px; margin: 0;"> Remember Me
+                            </label>
+                            <a href="#" class="text-sm" style="color: var(--primary); font-weight: 600;">Forgot
+                                Password?</a>
+                        </div>
+
+                        <button class="auth-btn-main" onclick="handleAuth('login')">Login</button>
+
+                        <div
+                            style="text-align: center; margin: 1.5rem 0; color: var(--text-muted); position: relative;">
+                            <span style="background: white; padding: 0 1rem; position: relative; z-index: 1;">or
+                                continue with</span>
+                            <hr
+                                style="position: absolute; top: 50%; width: 100%; border: none; border-top: 1px solid #e2e8f0;">
+                        </div>
+
+                        <div class="social-login">
+                            <button class="social-btn"><i class="bi bi-google" style="color: #DB4437;"></i>
+                                Google</button>
+                            <button class="social-btn"><i class="bi bi-github"></i> GitHub</button>
+                        </div>
+                    </div>
+
+                    <!-- Signup Form -->
+                    <div id="signup-form" style="display: none;">
+                        <h3 style="margin-bottom: 0.5rem;">Create an Account</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 2rem;">Join the future of
+                            urban mobility today.</p>
+
+                        <div class="input-group">
+                            <input type="text" id="signup-name" placeholder=" " required>
+                            <label>Full Name</label>
+                        </div>
+
+                        <div class="input-group">
+                            <input type="email" id="signup-email" placeholder=" " required>
+                            <label>Email Address</label>
+                        </div>
+
+                        <div class="input-group">
+                            <input type="password" id="signup-password" placeholder=" " required>
+                            <label>Create Password</label>
+                            <i class="bi bi-eye pass-toggle"
+                                onclick="togglePassVisibility('signup-password', this)"></i>
+                        </div>
+
+                        <div class="input-group">
+                            <input type="password" id="signup-confirm" placeholder=" " required>
+                            <label>Confirm Password</label>
+                            <i class="bi bi-eye pass-toggle" onclick="togglePassVisibility('signup-confirm', this)"></i>
+                        </div>
+
+                        <button class="auth-btn-main" onclick="handleAuth('signup')">Create Account</button>
+                    </div>
+
+                    <div class="footer-text">
+                        By continuing, you agree to our <a href="#" style="color: var(--primary);">Terms of Service</a>
+                        and <a href="#" style="color: var(--primary);">Privacy Policy</a>.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <header class="container flex justify-between items-center" style="padding-top: 3rem; padding-bottom: 3rem;">
+        <div class="flex items-center gap-4">
+            <img src="favicon.png" alt="PARKIT"
+                style="width: 45px; height: 45px; border-radius: 10px; box-shadow: 0 4px 12px rgba(25, 189, 255, 0.15);">
+            <div>
+                <h2 class="primary-gradient"
+                    style="margin: 0; font-size: 1.8rem; letter-spacing: -1px; font-weight: 800;">PARKIT</h2>
+                <div
+                    style="height: 2px; background: linear-gradient(90deg, var(--primary), transparent); width: 40px; margin-top: -2px;">
+                </div>
+            </div>
+        </div>
+        <div class="flex gap-6 items-center">
+            <div class="glass-card"
+                style="padding: 0.5rem 1.25rem; border-radius: 12px; display: flex; align-items: center; gap: 10px;">
+                <div class="pulse-dot"></div>
+                <div style="display: flex; flex-direction: column;">
+                    <span id="live-time"
+                        style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">18:45:22</span>
+                    <span style="font-size: 0.6rem; color: var(--text-dim); letter-spacing: 1px;">SYSTEM LIVE</span>
+                </div>
+            </div>
+            <button class="btn btn-outline"
+                style="width: 50px; height: 50px; border-radius: 50%; padding: 0; position: relative; overflow: hidden;"
+                onclick="toggleSidebar(true)">
+                <i class="bi bi-person-circle" style="font-size: 1.6rem;"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- UI Enhancements: Pulsing dot for live status -->
+    <style>
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+
+        .hero-visual-card {
+            position: relative;
+            border-radius: 40px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+        }
+
+        .hero-visual-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, var(--bg-main), transparent 50%);
+        }
+    </style>
+
+    <!-- Initial Hero Screen -->
+    <div id="hero-screen" class="container animate-fade-in"
+        style="min-height: 80vh; display: flex; align-items: center;">
+        <div class="grid" style="grid-template-columns: 1fr 1.2fr; gap: 6rem; align-items: center; width: 100%;">
+            <div>
+                <span class="badge"
+                    style="background: rgba(25, 189, 255, 0.08); color: var(--primary); padding: 0.6rem 1.2rem; margin-bottom: 2rem; display: inline-block; border: 1px solid rgba(25, 189, 255, 0.15);">
+                    <i class="bi bi-stars"></i> AI-POWERED PARKING
+                </span>
+                <h1 class="title-gradient"
+                    style="font-size: 4.5rem; line-height: 1.1; margin-bottom: 1.5rem; background: linear-gradient(135deg, #0f172a 0%, #334155 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                    The Future of <span class="primary-gradient">Urban Parking</span>
+                </h1>
+                <p style="font-size: 1.25rem; color: var(--text-dim); margin-bottom: 3rem; max-width: 540px;">
+                    Experience seamless, AI-driven parking management. Real-time slot detection, instant reservations,
+                    and smart monitoring—all in one place.
+                </p>
+                <div class="flex gap-6">
+                    <button class="btn btn-primary" style="padding: 1.2rem 3rem; font-size: 1.1rem;"
+                        onclick="showParkingGrid()">
+                        <i class="bi bi-geo-alt-fill"></i> FIND A SLOT
+                    </button>
+                    <button class="btn btn-outline" style="padding: 1.2rem 2.5rem;"
+                        onclick="showNotification('Demo tour starting...', 'info')">
+                        <i class="bi bi-play-circle"></i> HOW IT WORKS
+                    </button>
+                </div>
+
+                <div class="flex gap-16 mt-16">
+                    <div>
+                        <div
+                            style="font-size: 1.8rem; font-weight: 800; font-family: var(--font-heading); color: var(--primary); line-height: 1;">
+                            40</div>
+                        <div
+                            style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; margin-top: 5px; white-space: nowrap;">
+                            ACTIVE SLOTS</div>
+                    </div>
+                    <div>
+                        <div
+                            style="font-size: 1.8rem; font-weight: 800; font-family: var(--font-heading); color: var(--primary); line-height: 1;">
+                            0.8s</div>
+                        <div
+                            style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; margin-top: 5px; white-space: nowrap;">
+                            LATENCY</div>
+                    </div>
+                    <div style="width: 1px; background: var(--glass-border); height: 35px; align-self: center;"></div>
+                    <div>
+                        <div
+                            style="font-size: 1.8rem; font-weight: 800; font-family: var(--font-heading); color: var(--primary); line-height: 1;">
+                            98.4%</div>
+                        <div
+                            style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; margin-top: 5px; white-space: nowrap;">
+                            ACCURACY</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-visual-card"
+                style="box-shadow: 0 40px 100px rgba(25, 189, 255, 0.15); border: 1px solid rgba(25, 189, 255, 0.1);">
+                <img src="parkit_hero_visual.png" alt="Futuristic City"
+                    style="width: 100%; display: block; filter: saturate(1.1) brightness(1.05);">
+                <div class="glass-card"
+                    style="position: absolute; bottom: 30px; left: 30px; right: 30px; padding: 2rem; border-radius: 24px; z-index: 10; box-shadow: 0 20px 40px rgba(0,0,0,0.05);">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div
+                                style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 5px; letter-spacing: 1px; font-weight: 600;">
+                                CURRENT STATUS</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--text-main);">Floor A
+                                - North
+                                Wing</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div
+                                style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 5px; letter-spacing: 1px; font-weight: 600;">
+                                AVAILABLE</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--success);">21 Slots
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Main -->
+    <main id="main-dashboard" class="container animate-fade-in" style="display: none;">
+        <div class="grid" style="grid-template-columns: 1fr 380px; gap: 3rem;">
+            <!-- Left: Parking Map & Engine -->
+            <section>
+                <div class="flex justify-between items-center mb-10">
+                    <div>
+                        <button class="btn btn-outline"
+                            style="padding: 0.5rem 1rem; font-size: 0.8rem; border-radius: 8px; margin-bottom: 1rem;"
+                            onclick="goBackToHero()">
+                            <i class="bi bi-arrow-left"></i> BACK
+                        </button>
+                        <h2 class="title-gradient" style="font-size: 2.2rem; margin: 0;">Parking Floor A</h2>
+                        <p style="color: var(--text-dim); font-size: 0.9rem;">Real-time computer vision slot
+                            detection
+                            active.</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="glass-card"
+                            style="padding: 0.75rem 1.25rem; border-radius: 12px; border-left: 3px solid var(--success);">
+                            <div style="font-size: 0.6rem; color: var(--text-muted);">ALGORITHM</div>
+                            <div style="font-size: 0.9rem; font-weight: 700;">YOLOv8 Precise</div>
+                        </div>
+                        <div class="glass-card"
+                            style="padding: 0.75rem 1.25rem; border-radius: 12px; border-left: 3px solid var(--primary);">
+                            <div style="font-size: 0.6rem; color: var(--text-muted);">ENGINE</div>
+                            <div style="font-size: 0.9rem; font-weight: 700;">RTOS Kernel</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-10 mb-10" style="position: relative; overflow: hidden;">
+                    <!-- Subtle Scanner Effect -->
+                    <div
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--primary), transparent); animation: scan 4s linear infinite; opacity: 0.3;">
+                    </div>
+                    <style>
+                        @keyframes scan {
+                            0% {
+                                top: 0;
+                            }
+
+                            100% {
+                                top: 100%;
+                            }
+                        }
+                    </style>
+
+                    <div class="flex justify-between items-center mb-8">
+                        <div class="flex gap-8">
+                            <div class="flex items-center gap-3">
+                                <div style="width: 12px; height: 12px; border-radius: 3px; background: var(--success);">
+                                </div>
+                                <span style="font-size: 0.8rem; font-weight: 600;">Available</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div style="width: 12px; height: 12px; border-radius: 3px; background: var(--accent);">
+                                </div>
+                                <span style="font-size: 0.8rem; font-weight: 600;">Occupied</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div style="width: 12px; height: 12px; border-radius: 3px; background: var(--warning);">
+                                </div>
+                                <span style="font-size: 0.8rem; font-weight: 600;">Reserved</span>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">
+                            <i class="bi bi-clock"></i> REFRESH: <span class="font-bold">1.0s</span>
+                        </div>
+                    </div>
+
+                    <div id="parking-grid" class="flex flex-col gap-6">
+                        <!-- Slots will be grouped by row here -->
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Right: Booking Sidebar -->
+            <aside class="flex flex-col gap-8">
+                <div class="glass-panel p-8">
+                    <h3 class="mb-6" style="font-family: var(--font-heading);">Quick Statistics</h3>
+                    <div class="grid"
+                        style="grid-template-columns: 1fr 1fr; gap: 1rem; text-align: center; margin-bottom: 2rem;">
+                        <div class="glass-card" style="padding: 1.5rem 1rem;">
+                            <div id="counter-total" class="primary-gradient" style="font-size: 2.2rem;">40</div>
+                            <div
+                                style="font-size: 0.65rem; color: var(--text-muted); letter-spacing: 1px; margin-top: 5px;">
+                                TOTAL SLOTS</div>
+                        </div>
+                        <div class="glass-card" style="padding: 1.5rem 1rem;">
+                            <div id="counter-available" class="primary-gradient" style="font-size: 2.2rem;">24
+                            </div>
+                            <div
+                                style="font-size: 0.65rem; color: var(--text-muted); letter-spacing: 1px; margin-top: 5px;">
+                                AVAILABLE</div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+                        <span style="font-size: 0.7rem; color: var(--text-dim);">UTILIZATION</span>
+                        <span id="utilization-label" style="font-size: 0.7rem; color: var(--text-dim);">40%</span>
+                    </div>
+                    <div
+                        style="height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; overflow: hidden; border: 1px solid var(--glass-border);">
+                        <div id="utilization-bar"
+                            style="height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); width: 40%; transition: width 0.5s ease;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Actions -->
+                <div id="booking-cta" style="display: none;">
+                    <button id="main-book-btn" class="btn btn-primary"
+                        style="width: 100%; height: 100px; font-size: 1.2rem; border-radius: 24px; flex-direction: column; gap: 4px;"
+                        onclick="toggleBooking(true)">
+                        <div class="flex items-center gap-2">
+                            <i class="bi bi-calendar-check"></i> <span>SECURE RESERVATION</span>
+                        </div>
+                        <div id="selected-slot-label" style="font-size: 0.75rem; opacity: 0.8; font-weight: 400;"></div>
+                    </button>
+                </div>
+
+                <!-- Booking Form Card -->
+                <div id="booking-card" class="glass-panel p-8"
+                    style="display: none; border-top: 4px solid var(--primary);">
+                    <div class="flex justify-between items-center mb-8">
+                        <h3 style="margin: 0; font-family: var(--font-heading);">Reserve Spot</h3>
+                        <button class="btn btn-outline"
+                            style="padding: 0.5rem; border-radius: 50%; width: 32px; height: 32px;"
+                            onclick="toggleBooking(false)">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <form id="booking-form">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label
+                                style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.75rem; display: block; font-weight: 600; letter-spacing: 1px;">START
+                                TIME</label>
+                            <input type="time" id="start-time" value="19:30" required>
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <label
+                                style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.75rem; display: block; font-weight: 600; letter-spacing: 1px;">DURATION</label>
+                            <select id="duration" required>
+                                <option value="1">1 Hour</option>
+                                <option value="2">2 Hours</option>
+                                <option value="3">3 Hours</option>
+                                <option value="4">4 Hours</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 2rem;">
+                            <label
+                                style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.75rem; display: block; font-weight: 600; letter-spacing: 1px;">VEHICLE
+                                ID</label>
+                            <input type="text" id="vehicle-id" placeholder="Ex: ABC-1234" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1.25rem;">
+                            <i class="bi bi-check2-circle"></i> FINALIZE BOOKING
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Confidence Card -->
+                <div class="glass-card" style="border-left: 4px solid var(--primary);">
+                    <div class="flex gap-4 items-center">
+                        <div class="pulse-dot" style="background-color: var(--primary);"></div>
+                        <div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">ML CONFIDENCE</div>
+                            <div style="font-size: 1rem; font-weight: 700; color: var(--text-main);"><span
+                                    id="ml-confidence">98.4%</span></div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+    </div>
+
+    <!-- Modals / Notifications -->
+    <div id="notification" class="glass-panel animate-fade-in"
+        style="position: fixed; bottom: 20px; right: 20px; padding: 1rem 2rem; display: none; border-left: 4px solid var(--accent-emerald); z-index: 1000; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+        <div class="flex items-center gap-4">
+            <i class="bi bi-check-circle-fill" style="color: var(--accent-emerald);"></i>
+            <span id="notif-text">Booking Confirmed!</span>
+        </div>
+    </div>
+
+    <!-- Profile Sidebar -->
+    <div id="profile-sidebar" class="glass-panel"
+        style="position: fixed; top: 0; right: -350px; width: 350px; height: 100%; z-index: 3000; border-radius: 0; transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -10px 0 40px rgba(0,0,0,0.1);">
+        <div class="p-8">
+            <div class="flex justify-between items-center mb-10">
+                <h3 style="margin: 0;">Account</h3>
+                <button class="btn btn-outline" style="padding: 0.4rem; border-radius: 50%;"
+                    onclick="toggleSidebar(false)">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <!-- User Info Section -->
+            <div class="text-center mb-10">
+                <div
+                    style="width: 100px; height: 100px; background: var(--bg-dark); border: 2px solid var(--primary); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                    <i class="bi bi-person" style="font-size: 3rem; color: var(--primary);"></i>
+                </div>
+                <h2 style="font-size: 1.5rem; margin-bottom: 0.2rem;">Guest User</h2>
+                <p class="text-xs">guest.parkit@example.com</p>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <button class="btn btn-outline w-100" style="justify-content: flex-start; padding: 1rem;"
+                    onclick="toggleProfileModal(true)">
+                    <i class="bi bi-gear-fill" style="color: var(--primary);"></i> EDIT PROFILE
+                </button>
+                <button class="btn btn-outline w-100" style="justify-content: flex-start; padding: 1rem;"
+                    onclick="toggleBookingsView(true)">
+                    <i class="bi bi-card-checklist" style="color: var(--primary);"></i> MY BOOKINGS
+                </button>
+                <hr style="border: none; border-top: 1px solid var(--glass-border); margin: 1rem 0;">
+                <button class="btn btn-outline w-100"
+                    style="justify-content: flex-start; padding: 1rem; color: var(--accent-rose);"
+                    onclick="handleLogout()">
+                    <i class="bi bi-box-arrow-right"></i> LOGOUT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="profile-modal-overlay" class="modal-overlay">
+        <div class="profile-modal animate-fade-in">
+            <div class="flex justify-between items-center mb-8">
+                <h3 style="margin: 0;">Edit Profile</h3>
+                <button class="btn btn-outline" style="padding: 0.4rem; border-radius: 50%;"
+                    onclick="toggleProfileModal(false)">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="input-group">
+                <input type="text" id="profile-name" placeholder=" ">
+                <label>Display Name</label>
+            </div>
+            <div class="input-group">
+                <input type="tel" id="profile-phone" placeholder=" ">
+                <label>Phone Number</label>
+            </div>
+            <div class="input-group">
+                <input type="text" id="profile-vehicle" placeholder=" ">
+                <label>Default Vehicle Plate</label>
+            </div>
+            <button class="auth-btn-main" onclick="saveProfile()">Save Changes</button>
+        </div>
+    </div>
+
+    <!-- My Bookings View (Sidebar Overlay) -->
+    <div id="bookings-view" class="glass-panel"
+        style="position: fixed; top: 0; right: -400px; width: 400px; height: 100%; z-index: 3100; border-radius: 0; transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -10px 0 40px rgba(0,0,0,0.1); overflow-y: auto;">
+        <div class="p-8">
+            <div class="flex justify-between items-center mb-10">
+                <h3 style="margin: 0;">My Bookings</h3>
+                <button class="btn btn-outline" style="padding: 0.4rem; border-radius: 50%;"
+                    onclick="toggleBookingsView(false)">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div id="bookings-list">
+                <!-- Ticket items will be injected here -->
+                <div class="text-center p-10 text-muted" id="no-bookings-msg">
+                    <i class="bi bi-calendar-x" style="font-size: 3rem; opacity: 0.3;"></i>
+                    <p style="margin-top: 1rem;">No active bookings found.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="sidebar-overlay" onclick="toggleSidebar(false)"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: 2999; display: none; backdrop-filter: blur(4px);">
+    </div>
+
+    <script src="js/rtos.js"></script>
+    <script src="js/ml_engine.js"></script>
+    <script src="js/booking_engine.js"></script>
+    <script src="js/ui_controller.js"></script>
+</body>
+
+</html>
