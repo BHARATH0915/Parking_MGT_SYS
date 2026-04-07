@@ -60,6 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updateStats(); // Initial stats update
     updateTaskMetrics(); // Initial task metrics update
 
+
+
     // 4. UI Rendering Functions
     window.selectSlot = (slotId) => {
         const slot = ML.slots.find(s => s.id === slotId);

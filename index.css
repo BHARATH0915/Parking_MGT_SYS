@@ -706,3 +706,115 @@ select:focus {
     color: var(--text-main);
     font-weight: 700;
 }
+
+/* --- MOBILE RESPONSIVENESS FIXES --- */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem 1.5rem !important;
+    }
+
+    header.container {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+        justify-content: space-between;
+    }
+
+    /* Hero section font sizing and layout */
+    h1.title-gradient {
+        font-size: 2.8rem !important;
+    }
+
+    #hero-screen .grid {
+        grid-template-columns: 1fr !important;
+        gap: 3rem !important;
+    }
+
+    .flex.gap-6 {
+        flex-direction: column !important;
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .flex.gap-6 .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .flex.gap-16.mt-16 {
+        gap: 2rem !important;
+        justify-content: flex-start !important;
+    }
+
+    /* Dashboard Layout */
+    #main-dashboard .grid {
+        grid-template-columns: 1fr !important;
+        gap: 2rem !important;
+    }
+
+    /* Sidebar and Modals adjustments */
+    #profile-sidebar,
+    #bookings-view {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .glass-card {
+        padding: 1rem !important;
+    }
+
+    .glass-panel {
+        padding: 1.5rem !important;
+    }
+
+    /* Fix Flex container in dashboard stats */
+    #main-dashboard .flex.justify-between.items-center.mb-10 {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem;
+    }
+
+    #main-dashboard .flex.justify-between.items-center.mb-8 {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem;
+    }
+
+    /* Specific element fixes */
+    .hero-visual-card .glass-card {
+        left: 10px !important;
+        right: 10px !important;
+        bottom: 10px !important;
+        padding: 1rem !important;
+    }
+
+    .metrics-progress {
+        width: auto !important;
+    }
+
+    /* Form improvements for small screens */
+    .input-group input {
+        padding: 0.8rem 0.5rem;
+    }
+
+    .social-login {
+        flex-direction: column;
+    }
+
+    .social-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    h1.title-gradient {
+        font-size: 2.2rem !important;
+    }
+
+    .auth-form-card {
+        padding: 1.5rem !important;
+    }
+
+    .container {
+        padding: 1rem !important;
+    }
+}
