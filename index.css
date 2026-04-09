@@ -729,13 +729,13 @@ select:focus {
         gap: 3rem !important;
     }
 
-    .flex.gap-6 {
+    #hero-screen .flex.gap-6 {
         flex-direction: column !important;
         gap: 1rem;
         width: 100%;
     }
 
-    .flex.gap-6 .btn {
+    #hero-screen .flex.gap-6 .btn {
         width: 100%;
         justify-content: center;
     }
