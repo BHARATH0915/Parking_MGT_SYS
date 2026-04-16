@@ -12,6 +12,97 @@ document.addEventListener('DOMContentLoaded', () => {
     const counterAvail = document.getElementById('counter-available');
     const utilizationBar = document.getElementById('utilization-bar');
     const mlConfidence = document.getElementById('ml-confidence');
+    const facilitySelect = document.getElementById('facility-select');
+    let facilitiesData = [];
+    let map;
+    let markers = [];
+
+    function initMap() {
+        // Initialize Leaflet map, default roughly to Chennai center
+        map = L.map('map', { zoomControl: false }).setView([13.0827, 80.2707], 12);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Add custom controls
+        L.control.zoom({ position: 'topright' }).addTo(map);
+    }
+
+    function addMarkersToMap() {
+        if (!map) return;
+        
+        // Clear old markers if any
+        markers.forEach(m => map.removeLayer(m));
+        markers = [];
+
+        // Add markers for all facilities
+        facilitiesData.forEach(fac => {
+            if (fac.latitude && fac.longitude) {
+                // Simple custom icon design
+                const icon = L.divIcon({
+                    className: 'custom-map-marker',
+                    html: `<div style="background-color: var(--primary); border: 2px solid white; width: 24px; height: 24px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; justify-content: center; align-items: center;"><i class="bi bi-p-circle text-white" style="font-size: 12px; font-weight: bold;"></i></div>`,
+                    iconAnchor: [12, 12]
+                });
+
+                const marker = L.marker([fac.latitude, fac.longitude], { icon: icon }).addTo(map);
+                marker.bindTooltip(`<b>${fac.name}</b><br/>${fac.total_slots} Slots`, { direction: 'top', offset: [0, -10] });
+                
+                marker.on('click', () => {
+                    // Update dropdown and show grid
+                    facilitySelect.value = fac.id;
+                    showParkingGrid();
+                    const container = document.getElementById('slot-selection-container');
+                    if (container) {
+                        container.style.display = 'block';
+                        container.classList.add('animate-fade-in');
+                    }
+                });
+                
+                markers.push(marker);
+            }
+        });
+
+        // Auto center based on points
+        if (markers.length > 0) {
+            const group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
+    }
+
+    // Fetch parking facilities
+    async function loadFacilities() {
+        try {
+            const response = await fetch('http://localhost:5000/api/parking_areas');
+            const result = await response.json();
+            if (result.success) {
+                facilitiesData = result.data;
+                facilitySelect.innerHTML = facilitiesData.map(fac => 
+                    `<option value="${fac.id}">${fac.name}</option>`
+                ).join('');
+                
+                if (window.L) {
+                    addMarkersToMap();
+                }
+            } else {
+                facilitySelect.innerHTML = `<option value="">Failed to load data</option>`;
+            }
+        } catch (err) {
+            console.error('Error fetching facilities:', err);
+            facilitySelect.innerHTML = `<option value="">Backend not running</option>`;
+        }
+    }
+
+    // Delay map init slightly to ensure container is ready
+    setTimeout(() => {
+        initMap();
+        if (facilitiesData.length > 0) {
+            addMarkersToMap();
+        }
+    }, 100);
+    
+    loadFacilities();
 
     // 2. Define RTOS Tasks
     const captureTask = new RTOS_Task('Frame Capture', 0, 500, 150, async () => {
@@ -193,14 +284,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const duration = document.getElementById('duration').value;
             const vehicleId = document.getElementById('vehicle-id').value;
 
-            // Auto-select first available slot for simplicity in this demo, 
-            // but normally user would pick a slot
-            const availSlot = ML.slots.find(s => s.status === 'available');
+            // Use the selected slot if valid, otherwise fallback to any available
+            let targetSlotId = window.selectedSlotId;
+            let targetSlot = ML.slots.find(s => s.id === targetSlotId);
+            
+            if (!targetSlot || (targetSlot.status !== 'available' && targetSlot.status !== 'booked')) {
+                targetSlot = ML.slots.find(s => s.status === 'available');
+            }
 
-            if (availSlot) {
-                Booking.book(availSlot.id, time, duration, vehicleId);
-                showNotification(`Reservation Confirmed for Slot #${availSlot.label}`);
+            if (targetSlot) {
+                const facilityName = document.getElementById('dashboard-facility-title').innerText;
+                Booking.book(targetSlot.id, time, duration, vehicleId, facilityName);
+                showNotification(`Reservation Confirmed for Slot #${targetSlot.label}`);
                 bookingForm.reset();
+                window.selectedSlotId = null; // Clear selection after booking
+                window.toggleBooking(false); // Hide booking form
             } else {
                 showNotification(`No slots available!`, 'error');
             }
@@ -226,7 +324,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = new Date();
         timeDisplay.innerText = now.toTimeString().split(' ')[0];
     }, 1000);
-    // 7. Booking Tab Toggle
     window.toggleBooking = (show) => {
         const cta = document.getElementById('booking-cta');
         const card = document.getElementById('booking-card');
@@ -234,6 +331,22 @@ document.addEventListener('DOMContentLoaded', () => {
             cta.style.display = 'none';
             card.style.display = 'block';
             card.classList.add('animate-fade-in');
+            
+            // Auto-fill vehicle ID from profile if available
+            const user = JSON.parse(localStorage.getItem('parkit_user')) || {};
+            const vehicleInput = document.getElementById('vehicle-id');
+            if (vehicleInput && user.vehicle) {
+                vehicleInput.value = user.vehicle;
+            }
+
+            // Auto-fill start time with current time
+            const startTimeInput = document.getElementById('start-time');
+            if (startTimeInput) {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                startTimeInput.value = `${hours}:${minutes}`;
+            }
         } else {
             cta.style.display = 'block';
             card.style.display = 'none';
@@ -241,10 +354,33 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.showParkingGrid = () => {
+        const selectedId = document.getElementById('facility-select').value;
+        const selectedFac = facilitiesData.find(f => f.id == selectedId);
+        
+        if (selectedFac) {
+            document.getElementById('dashboard-facility-title').innerText = selectedFac.name;
+            // Update ML Engine with the new slot count
+            window.ML = new MLEngine(selectedFac.total_slots, selectedFac.available_slots);
+            
+            // Re-render and update stats
+            renderSlots();
+            updateStats();
+        }
+
         document.getElementById('hero-screen').style.display = 'none';
         const dashboard = document.getElementById('main-dashboard');
         dashboard.style.display = 'grid';
         dashboard.classList.add('animate-fade-in');
+        
+        if (map) {
+            setTimeout(() => {
+                map.invalidateSize();
+                if (markers.length > 0) {
+                    const group = new L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                }
+            }, 100);
+        }
     };
 
     window.goBackToHero = () => {
@@ -422,6 +558,8 @@ document.addEventListener('DOMContentLoaded', () => {
         bookings.forEach(booking => {
             const ticket = document.createElement('div');
             ticket.className = 'booking-ticket animate-fade-in';
+            ticket.style.cursor = 'pointer';
+            ticket.onclick = () => window.showTicketDetail(booking.id);
             const startTime = new Date(booking.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const date = new Date(booking.startTime).toLocaleDateString();
 
@@ -429,6 +567,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="ticket-header">
                     <span style="font-weight: 800; color: var(--primary);">#${booking.id}</span>
                     <span class="badge badge-booked">ACTIVE</span>
+                </div>
+                <div class="ticket-row" style="margin-bottom: 8px;">
+                    <span class="ticket-label">FACILITY</span>
+                    <span class="ticket-value" style="text-align: right; line-height: 1.2;">${booking.facilityName || 'N/A'}</span>
                 </div>
                 <div class="ticket-row">
                     <span class="ticket-label">SLOT</span>
@@ -450,5 +592,27 @@ document.addEventListener('DOMContentLoaded', () => {
             list.appendChild(ticket);
         });
     }
+
+    // Ticket Detail Modal functionality
+    window.showTicketDetail = (id) => {
+        const booking = Booking.bookings.find(b => b.id === id);
+        if (!booking) return;
+
+        const date = new Date(booking.startTime).toLocaleDateString();
+        const time = new Date(booking.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        document.getElementById('ticket-detail-facility').innerText = booking.facilityName || 'Global Parking';
+        document.getElementById('ticket-detail-id').innerText = '#' + booking.id;
+        document.getElementById('ticket-detail-slot').innerText = booking.slotId;
+        document.getElementById('ticket-detail-date').innerText = date;
+        document.getElementById('ticket-detail-time').innerText = time;
+        document.getElementById('ticket-detail-vehicle').innerText = booking.vehicleId;
+        
+        // Generate QR code dynamically via API
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(JSON.stringify({id: booking.id, slot: booking.slotId, plate: booking.vehicleId}))}`;
+        document.getElementById('ticket-detail-qr').src = qrUrl;
+
+        document.getElementById('ticket-detail-modal-overlay').style.display = 'flex';
+    };
 
 });

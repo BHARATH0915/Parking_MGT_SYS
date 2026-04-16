@@ -34,6 +34,17 @@ app.get('/api/test-db', async (req, res) => {
     }
 });
 
+// Parking Areas Route
+app.get('/api/parking_areas', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM parking_areas');
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('Failed to fetch parking areas:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch parking areas', error: error.message });
+    }
+});
+
 // Basic Route
 app.get('/', (req, res) => {
     res.json({ message: 'Welcome to the PARKIT Backend API' });

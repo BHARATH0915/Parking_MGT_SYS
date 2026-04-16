@@ -4,7 +4,7 @@
  */
 
 class MLEngine {
-    constructor(slotCount) {
+    constructor(slotCount, availableCount = slotCount) {
         this.slotCount = slotCount;
         const slotsPerRow = 10;
         this.slots = Array.from({ length: slotCount }, (_, i) => {
@@ -18,6 +18,13 @@ class MLEngine {
                 lastUpdate: Date.now()
             };
         });
+
+        // Map DB available vs total slots randomly
+        let occupiedToAssign = slotCount - availableCount;
+        let indices = Array.from({length: slotCount}, (_, i) => i).sort(() => Math.random() - 0.5);
+        for(let i=0; i < occupiedToAssign; i++) {
+            this.slots[indices[i]].status = 'occupied';
+        }
 
         // Performance Metrics
         this.metrics = {

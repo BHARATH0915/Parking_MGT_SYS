@@ -27,7 +27,7 @@ class BookingEngine {
         });
     }
 
-    book(slotId, startTime, duration, vehicleId) {
+    book(slotId, startTime, duration, vehicleId, facilityName) {
         const startTimeDate = new Date();
         const [h, m] = startTime.split(':');
         startTimeDate.setHours(h, m, 0, 0);
@@ -36,6 +36,7 @@ class BookingEngine {
 
         const newBooking = {
             id: 'B-' + Math.random().toString(36).substr(2, 6).toUpperCase(),
+            facilityName: facilityName || 'Unknown Facility',
             slotId,
             startTime: startTimeDate.toISOString(),
             endTime: endTime.toISOString(),
