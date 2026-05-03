@@ -117,9 +117,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const bookedIds = bookedInfo.map(b => b.slotId);
 
         detections.forEach(slot => {
-            if (bookedIds.includes(slot.id)) {
-                slot.status = 'booked';
-            }
+            slot.spots.forEach(spot => {
+                if (bookedIds.includes(spot.id)) {
+                    spot.status = 'booked';
+                }
+            });
         });
 
         // Update Metrics in UI periodically
@@ -159,19 +161,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!slot) return;
 
         const now = Date.now();
-        const booking = Booking.getSlotBookingInfo(slot.id);
         let isPrebookable = false;
+        let prebookableSpot = null;
+        const availableSpot = slot.spots.find(s => s.status === 'available');
 
-        if (booking) {
-            const remainingMs = new Date(booking.endTime).getTime() - now;
-            const remainingMins = remainingMs / (60 * 1000);
-            if (remainingMins > 0 && remainingMins <= 20) {
-                isPrebookable = true;
+        for (const spot of slot.spots) {
+            const booking = Booking.getSlotBookingInfo(spot.id);
+            if (booking) {
+                const remainingMs = new Date(booking.endTime).getTime() - now;
+                const remainingMins = remainingMs / (60 * 1000);
+                if (remainingMins > 0 && remainingMins <= 20) {
+                    isPrebookable = true;
+                    prebookableSpot = spot;
+                    break;
+                }
             }
         }
 
-        if (slot.status === 'available' || isPrebookable) {
+        if (availableSpot || isPrebookable) {
             window.selectedSlotId = slot.id;
+            window.selectedSpotId = isPrebookable ? prebookableSpot.id : availableSpot.id;
 
             // UI Feedback
             document.querySelectorAll('.parkit-selected').forEach(el => el.classList.remove('parkit-selected'));
@@ -186,16 +195,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const rowChar = slot.label.charAt(0);
             const seatNum = slot.label.substring(1);
+            const spotNum = window.selectedSpotId.split('-')[1];
 
             if (isPrebookable) {
-                bookBtn.innerHTML = `<div class="flex items-center gap-2"><i class="bi bi-clock-history"></i> <span>SECURE PRE-BOOK</span></div> <div id="selected-slot-label" style="font-size: 0.75rem; opacity: 0.8; font-weight: 400;">Row ${rowChar} - Column ${slot.label}</div>`;
-                showNotification(`Slot #${slot.label} expires soon.`, 'info');
+                bookBtn.innerHTML = `<div class="flex items-center gap-2"><i class="bi bi-clock-history"></i> <span>SECURE PRE-BOOK</span></div> <div id="selected-slot-label" style="font-size: 0.75rem; opacity: 0.8; font-weight: 400;">Row ${rowChar} - Column ${slot.label} (Spot ${spotNum})</div>`;
+                showNotification(`Spot ${spotNum} in Slot #${slot.label} expires soon.`, 'info');
             } else {
-                bookBtn.innerHTML = `<div class="flex items-center gap-2"><i class="bi bi-calendar-check"></i> <span>SECURE RESERVATION</span></div> <div id="selected-slot-label" style="font-size: 0.75rem; opacity: 0.8; font-weight: 400;">Row ${rowChar} - Column ${slot.label}</div>`;
-                showNotification(`Slot #${slot.label} Selected`, 'info');
+                bookBtn.innerHTML = `<div class="flex items-center gap-2"><i class="bi bi-calendar-check"></i> <span>SECURE RESERVATION</span></div> <div id="selected-slot-label" style="font-size: 0.75rem; opacity: 0.8; font-weight: 400;">Row ${rowChar} - Column ${slot.label} (Spot ${spotNum})</div>`;
+                showNotification(`Spot ${spotNum} in Slot #${slot.label} Selected`, 'info');
             }
         } else {
-            showNotification(`Slot #${slot.label} is currently unavailable.`, 'error');
+            showNotification(`Slot #${slot.label} is currently full.`, 'error');
         }
     };
 
@@ -215,18 +225,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div style="display: flex; gap: 0.75rem;">
                         ${rowSlots.map(slot => {
                 const isSelected = window.selectedSlotId === slot.id;
-                const color = slot.status === 'available' ? 'var(--success)' : (slot.status === 'occupied' ? 'var(--accent)' : 'var(--warning)');
-                const bg = slot.status === 'available' ? '#fff' : (slot.status === 'occupied' ? 'rgba(244, 63, 94, 0.05)' : 'rgba(245, 158, 11, 0.05)');
+                const availableSpots = slot.spots.filter(s => s.status === 'available').length;
+                const bg = availableSpots > 0 ? '#fff' : 'rgba(244, 63, 94, 0.05)';
+
+                const dotsHtml = slot.spots.map(spot => {
+                    const color = spot.status === 'available' ? 'var(--success)' : (spot.status === 'occupied' ? 'var(--accent)' : 'var(--warning)');
+                    return `<div style="width: 6px; height: 6px; border-radius: 50%; background: ${color}; box-shadow: 0 0 8px ${color};"></div>`;
+                }).join('');
 
                 return `
                                 <div class="seat-node ${isSelected ? 'parkit-selected' : ''}" 
                                      id="slot-${slot.id}"
-                                     style="width: 50px; height: 60px; border-radius: 10px; border: 1px solid var(--glass-border); 
+                                     style="width: 60px; height: 60px; border-radius: 10px; border: 1px solid var(--glass-border); 
                                             display: flex; flex-direction: column; align-items: center; justify-content: center; 
                                             cursor: pointer; position: relative; transition: all 0.2s; background: ${bg};"
                                      onclick="window.selectSlot(${slot.id})">
-                                    <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-main);">${slot.label}</div>
-                                    <div style="width: 6px; height: 6px; border-radius: 50%; background: ${color}; margin-top: 6px; box-shadow: 0 0 8px ${color};"></div>
+                                    <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">${slot.label}</div>
+                                    <div style="display: flex; gap: 4px;">
+                                        ${dotsHtml}
+                                    </div>
                                 </div>
                             `;
             }).join('')}
@@ -238,8 +255,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateStats() {
-        const available = ML.slots.filter(s => s.status === 'available').length;
-        const total = ML.slots.length;
+        let available = 0;
+        let total = 0;
+        ML.slots.forEach(slot => {
+            total += slot.spots.length;
+            available += slot.spots.filter(s => s.status === 'available').length;
+        });
         const utilization = Math.round(((total - available) / total) * 100);
 
         counterTotal.innerText = total;
@@ -284,23 +305,43 @@ document.addEventListener('DOMContentLoaded', () => {
             const duration = document.getElementById('duration').value;
             const vehicleId = document.getElementById('vehicle-id').value;
 
-            // Use the selected slot if valid, otherwise fallback to any available
-            let targetSlotId = window.selectedSlotId;
-            let targetSlot = ML.slots.find(s => s.id === targetSlotId);
-            
-            if (!targetSlot || (targetSlot.status !== 'available' && targetSlot.status !== 'booked')) {
-                targetSlot = ML.slots.find(s => s.status === 'available');
+            // Use the selected spot if valid, otherwise fallback to any available
+            let targetSpotId = window.selectedSpotId;
+            let targetSpot = null;
+            let targetSlot = null;
+
+            if (targetSpotId) {
+                for (const s of ML.slots) {
+                    const spot = s.spots.find(sp => sp.id === targetSpotId);
+                    if (spot && (spot.status === 'available' || spot.status === 'booked')) {
+                        targetSpot = spot;
+                        targetSlot = s;
+                        break;
+                    }
+                }
             }
 
-            if (targetSlot) {
+            if (!targetSpot) {
+                for (const s of ML.slots) {
+                    const spot = s.spots.find(sp => sp.status === 'available');
+                    if (spot) {
+                        targetSpot = spot;
+                        targetSlot = s;
+                        break;
+                    }
+                }
+            }
+
+            if (targetSpot) {
                 const facilityName = document.getElementById('dashboard-facility-title').innerText;
-                Booking.book(targetSlot.id, time, duration, vehicleId, facilityName);
-                showNotification(`Reservation Confirmed for Slot #${targetSlot.label}`);
+                Booking.book(targetSpot.id, time, duration, vehicleId, facilityName);
+                showNotification(`Reservation Confirmed for Slot #${targetSlot.label} (Spot ${targetSpot.id.split('-')[1]})`);
                 bookingForm.reset();
-                window.selectedSlotId = null; // Clear selection after booking
-                window.toggleBooking(false); // Hide booking form
+                window.selectedSlotId = null;
+                window.selectedSpotId = null;
+                window.toggleBooking(false);
             } else {
-                showNotification(`No slots available!`, 'error');
+                showNotification(`No spots available!`, 'error');
             }
         };
     }

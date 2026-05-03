@@ -45,6 +45,32 @@ app.get('/api/parking_areas', async (req, res) => {
     }
 });
 
+// Bookings Route (Save)
+app.post('/api/bookings', async (req, res) => {
+    try {
+        const { id, facilityName, slotId, startTime, endTime, vehicleId, createdAt } = req.body;
+        const [result] = await pool.query(
+            'INSERT INTO bookings (id, facilityName, slotId, startTime, endTime, vehicleId, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [id, facilityName, slotId, new Date(startTime), new Date(endTime), vehicleId, new Date(createdAt)]
+        );
+        res.json({ success: true, message: 'Booking saved successfully', data: result });
+    } catch (error) {
+        console.error('Failed to save booking:', error);
+        res.status(500).json({ success: false, message: 'Failed to save booking', error: error.message });
+    }
+});
+
+// Bookings Route (Get)
+app.get('/api/bookings', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM bookings');
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('Failed to fetch bookings:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch bookings', error: error.message });
+    }
+});
+
 // Basic Route
 app.get('/', (req, res) => {
     res.json({ message: 'Welcome to the PARKIT Backend API' });

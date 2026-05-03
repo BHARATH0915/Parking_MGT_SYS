@@ -46,6 +46,16 @@ class BookingEngine {
 
         this.bookings.push(newBooking);
         this.save();
+
+        // Save to DB via backend API
+        fetch('http://localhost:5000/api/bookings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newBooking)
+        }).catch(err => console.error('Error saving booking to DB:', err));
+
         return newBooking;
     }
 

@@ -10,20 +10,33 @@ class MLEngine {
         this.slots = Array.from({ length: slotCount }, (_, i) => {
             const rowChar = String.fromCharCode(65 + Math.floor(i / slotsPerRow));
             const colNum = (i % slotsPerRow) + 1;
+            const label = `${rowChar}${colNum}`;
             return {
                 id: i + 1,
-                label: `${rowChar}${colNum}`,
-                status: 'available',
+                label: label,
+                spots: [
+                    { id: `${label}-1`, status: 'available' },
+                    { id: `${label}-2`, status: 'available' },
+                    { id: `${label}-3`, status: 'available' }
+                ],
                 confidence: 0.98 + (Math.random() * 0.02),
                 lastUpdate: Date.now()
             };
         });
 
         // Map DB available vs total slots randomly
-        let occupiedToAssign = slotCount - availableCount;
-        let indices = Array.from({length: slotCount}, (_, i) => i).sort(() => Math.random() - 0.5);
-        for(let i=0; i < occupiedToAssign; i++) {
-            this.slots[indices[i]].status = 'occupied';
+        let totalSpots = slotCount * 3;
+        let targetOccupied = totalSpots - (availableCount * 3);
+        if (targetOccupied < 0) targetOccupied = 0;
+        if (targetOccupied > totalSpots) targetOccupied = totalSpots;
+        
+        let allSpots = [];
+        this.slots.forEach(slot => {
+            slot.spots.forEach(spot => allSpots.push(spot));
+        });
+        allSpots.sort(() => Math.random() - 0.5);
+        for(let i=0; i < targetOccupied; i++) {
+            allSpots[i].status = 'occupied';
         }
 
         // Performance Metrics
@@ -41,18 +54,19 @@ class MLEngine {
 
         this.slots.forEach(slot => {
             // Small chance of state change (simulated cars coming/going)
-            const changeProb = Math.random();
-
-            // Don't change "booked" slots - these are controlled by booking logic
-            if (slot.status !== 'booked') {
-                if (slot.status === 'available' && changeProb < 0.02) {
-                    slot.status = 'occupied';
-                    slot.lastUpdate = Date.now();
-                } else if (slot.status === 'occupied' && changeProb < 0.05) {
-                    slot.status = 'available';
-                    slot.lastUpdate = Date.now();
+            slot.spots.forEach(spot => {
+                const changeProb = Math.random();
+                // Don't change "booked" slots - these are controlled by booking logic
+                if (spot.status !== 'booked') {
+                    if (spot.status === 'available' && changeProb < 0.01) {
+                        spot.status = 'occupied';
+                        slot.lastUpdate = Date.now();
+                    } else if (spot.status === 'occupied' && changeProb < 0.02) {
+                        spot.status = 'available';
+                        slot.lastUpdate = Date.now();
+                    }
                 }
-            }
+            });
 
             // Confidence variations based on "lighting/resolution" simulation
             slot.confidence = 0.95 + (Math.random() * 0.05);
